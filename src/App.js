@@ -17,7 +17,7 @@ function App() {
         {
         //  {!user ? (
         }
-        {!user ? (
+        {!user  ? (
           <Login />
         ) : (
        <>
@@ -29,7 +29,7 @@ function App() {
             <Chat />
           </Route>\\
           <Route path="/">
-            <h1>Welcome</h1>
+            <h1 class="first">初期画面</h1>
           </Route>
         </Switch>
        </div>

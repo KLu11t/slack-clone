@@ -34,7 +34,8 @@ function Sidebar() {
         setDMs(
            snapshot.docs.map((doc) => ({
              id: doc.id,
-             UserName: doc.data().UserName,
+             UserName1: doc.data().UserName1,
+             UserName2: doc.data().UserName2,
            }))
          )
         );
@@ -61,10 +62,15 @@ function Sidebar() {
                 <SidebarOption Icon={AddBox} title="チャンネルを追加" addChannelOption ChOrUsFlag={1}/>
               </div>
                 <SidebarOption Icon={ExpandMoreIcon} title="ダイレクトメッセージ" /> 
-                <div className="sidebar__containts">
-                {DMs.map((DM) => (
-                  <SidebarOption username={DM.UserName} id={DM.id} ChOrUsFlag={0}/>
-                ))}      
+                <div className="sidebar__containts"> 
+                {DMs.map((DM) => {
+                  if(DM.UserName1 == user.email){
+                  return <SidebarOption username={DM.UserName2} id={DM.id} ChOrUsFlag={0}/>
+                }else if(DM.UserName2 == user.email){
+                  return <SidebarOption username={DM.UserName1} id={DM.id} ChOrUsFlag={0}/>
+                }
+                })}              
+
              <SidebarOption Icon={AddBox} title="メンバーを追加" addDMuserop ChOrUsFlag={0}/>
              </div>
         </div>

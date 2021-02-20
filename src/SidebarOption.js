@@ -3,10 +3,13 @@ import "./SidebarOption.css";
 import { useHistory } from "react-router-dom";
 import db from "./firebase";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
+import { useStateValue } from "./StateProvider";
 
 
 function SidebarOption({ Icon, title, id, addChannelOption, username, addDMuserop, ChOrUsFlag }) {
     const history = useHistory();
+    const [{ user }] = useStateValue();
+
     const selectChannel = () => {
         if (id) {
             history.push(`/room/${id}`);
@@ -24,7 +27,7 @@ function SidebarOption({ Icon, title, id, addChannelOption, username, addDMusero
 
     const addChannel = () => {
         const channelName = prompt('Please enter the channel name');
-
+      
         if (channelName) {
             db.collection('rooms').add({
                 name: channelName,
@@ -34,10 +37,15 @@ function SidebarOption({ Icon, title, id, addChannelOption, username, addDMusero
 
     const addDMuser = () => {
       const DMusername = prompt('Please enter the mailadress of the user');
-
+      var UniqID = "";
+      {user.email > DMusername 
+        ? (UniqID = user.email + "-" + DMusername) 
+        : (UniqID = DMusername + "-" + user.email)}
       if (DMusername) {
           db.collection('DirectM').add({
-              UserName: DMusername,
+              UserName1: DMusername,
+              UserName2: user.email,
+              DMid: UniqID,
           })
       }
   };
@@ -72,11 +80,10 @@ function SidebarOption({ Icon, title, id, addChannelOption, username, addDMusero
           } else {
             if (!username) { 
             return <h3 className="sidebarOption__channel">
-            <span className="sidebarOption__hash">#</span>{title}
-            </h3>
+            <span className="sidebarOption__hash">#</span>{title}</h3>
             } else {
             return <h3 className="sidebarOption__username">
-              <span className="sidebarOptionDM"><FiberManualRecordIcon /></span >{username}</h3>
+              <span className="sidebarOptionDM"><FiberManualRecordIcon /></span>{username}</h3>
             }
           }
         })()}

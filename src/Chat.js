@@ -8,22 +8,27 @@ import db from "./firebase";
 import { useState, useEffect, useRef, } from "react";
 import Message from './Message';
 import ChatInput from './ChatInput.js';
-
+import { useStateValue } from "./StateProvider";
 
 function Chat() {
     const { roomId } = useParams();
     const [roomDetails, setRoomDetails] = useState(null);
+    const [DMroomDetails, setDMroomDetails] = useState(null);
     const [roomMessages, setRoomMessages] = useState([]);
-    let resultsRef = useRef();
+    const [DMroomMessages, setDMRoomMessages] = useState([]);
+    const [{ user }] = useStateValue();
 
     useEffect(() => {
-      resultsRef.current.scrollTop = 50;
 
       if (roomId) {
         db.collection('rooms')
         .doc(roomId)
         .onSnapshot(snapshot => setRoomDetails(snapshot.data()
         ))
+        db.collection('DirectM')
+      .doc(roomId)
+      .onSnapshot(snapshot => setDMroomDetails(snapshot.data()
+      ))
     }
 
     db.collection('rooms')
@@ -33,6 +38,13 @@ function Chat() {
     .onSnapshot((snapshot) =>
       setRoomMessages(snapshot.docs.map(doc => doc.data()))
       );
+      db.collection('DirectM')
+      .doc(roomId)
+      .collection('messages')
+      .orderBy('timestamp','asc')
+      .onSnapshot((snapshot) =>
+        setDMRoomMessages(snapshot.docs.map(doc => doc.data()))
+        );
   }, [roomId]);
 
     return (
@@ -40,8 +52,18 @@ function Chat() {
 
       <div className="chat__header">
         <div className="chat__headerLeft">
-          <h4 className="chat__channelName">
-              <strong>#{roomDetails?.name}</strong>
+          <h4 className="chat__channelName">          
+            {(() => {    
+              if(roomDetails?.name){
+                return <strong>#{roomDetails?.name}</strong>
+              }else if(DMroomDetails?.DMid){
+                if(DMroomDetails?.UserName1 == user.email){
+                  return <strong>#{DMroomDetails?.UserName2}</strong>
+                }else {
+                  return <strong>#{DMroomDetails?.UserName1}</strong>
+                }
+              }
+            })()}
             <StarBorderOutlinedIcon />
           </h4>
           トピックを追加
@@ -56,22 +78,34 @@ function Chat() {
   
             <div className="chat__field" >
             
-          <div className="chat__messages" ref={resultsRef}>
+          <div className="chat__messages" >
           
-            {roomMessages.map(({message, timestamp, user, userImage}) => (
-              <Message
-              message={message}
-              timestamp={timestamp}
-              user={user}
-              userImage={userImage}
-              />
-            ))}
+            {roomMessages.map(({message, timestamp, user, userImage}) => {
+              if(roomDetails){
+                return <Message message={message} timestamp={timestamp} user={user} userImage={userImage}/>
+                }
+            })}
+            
+            {DMroomMessages.map(({message, timestamp, user, userImage}) => {
+              if(DMroomDetails){
+              return <Message message={message} timestamp={timestamp} user={user} userImage={userImage}/>
+              }
+            })}
+            
           </div>
           
          </div>
 
         <div className="chat__bottom">
-        <ChatInput channelName={roomDetails?.name} channelId={roomId} />
+        <ChatInput channelName={roomDetails?.name} DMchannelName=
+{(() => {   
+if(DMroomDetails?.UserName1 == user.email){
+  return DMroomDetails?.UserName2
+}else {
+  return DMroomDetails?.UserName1
+}
+})()}
+         channelId={roomId} />
         </div>
 
       </div>
